@@ -1,173 +1,46 @@
-select 'Total dos Débitos' as linha, valor_contabil as apuracao, to_char(data_lancamento, 'mm/yyyy') as mes_ano from v_bi_fiscal vbf where tipo = 'S'
+select * from 
+(select 1 as id, '1 - Total dos Débitos' as linha, SUM(valor_contabil) *-1 as apuracao, to_char(data_lancamento, 'mm/yyyy') as mes_ano from v_bi_fiscal vbf where tipo = 'S'
+group by 2,4,1
 union all
-select 'Total Ajuste Débitos' as linha, caju_valores_1 as apuracao ,to_char(caju_findata_1, 'mm/yyyy') as mes_ano from v_bi_ajustesfisc
+select 2 id, '2 - Total Ajuste Débitos' as linha, SUM(caju_valores_1) *-1 as apuracao ,to_char(caju_findata_1, 'mm/yyyy') as mes_ano from v_bi_ajustesfisc
 where caju_descric_1 like '%débito%'
+group by 2,4,1
 union all
-select
-utilização,
-SUM(caju_valores_1) as apuração,
-to_char(caju_findata_1, 'mm/yyyy') as mes_ano
-from v_bi_ajustesfisc vba 
-left join (select 	
-ctab_siglest_23	|| ctab_tipoapu_23 || ctab_utiliza_23 || CASE
-		WHEN length(ctab_sequenc_23::text) = 1 THEN '000' || ctab_sequenc_23::text
-	    WHEN length(ctab_sequenc_23::text) = 2 THEN '00' || ctab_sequenc_23::text
-	    WHEN length(ctab_sequenc_23::text) = 3 THEN '0' || ctab_sequenc_23::text
-	    ELSE ctab_sequenc_23::text
-	END AS cod_ajuste,
-ctab_siglest_23,
-ctab_utiliza_23 as cod_util,
-case 
-	when ctab_utiliza_23 = 0 then 'Outros Débitos'
-	when ctab_utiliza_23 = 1 then 'Estorno de Créditos'
-	when ctab_utiliza_23 = 2 then 'Outros Créditos'
-	when ctab_utiliza_23 = 3 then 'Estornos de Débitos'
-	when ctab_utiliza_23 = 4 then 'Deduções'
-	when ctab_utiliza_23 = 5 then 'Débitos Especiais'
-end utilização
-from esctab23) ca on ca.cod_ajuste = caju_codajus_1
+select 3 as id, 3 || ' - ' || utilização, apuração*-1, mes_ano from v_bi_ajustes
 where cod_util = 3
-group by 1,3
 union all
-select
-utilização,
-SUM(caju_valores_1) as apuração,
-to_char(caju_findata_1, 'mm/yyyy') as mes_ano
-from v_bi_ajustesfisc vba 
-left join (select 	
-ctab_siglest_23	|| ctab_tipoapu_23 || ctab_utiliza_23 || CASE
-		WHEN length(ctab_sequenc_23::text) = 1 THEN '000' || ctab_sequenc_23::text
-	    WHEN length(ctab_sequenc_23::text) = 2 THEN '00' || ctab_sequenc_23::text
-	    WHEN length(ctab_sequenc_23::text) = 3 THEN '0' || ctab_sequenc_23::text
-	    ELSE ctab_sequenc_23::text
-	END AS cod_ajuste,
-ctab_siglest_23,
-ctab_utiliza_23 as cod_util,
-case 
-	when ctab_utiliza_23 = 0 then 'Outros Débitos'
-	when ctab_utiliza_23 = 1 then 'Estorno de Créditos'
-	when ctab_utiliza_23 = 2 then 'Outros Créditos'
-	when ctab_utiliza_23 = 3 then 'Estornos de Débitos'
-	when ctab_utiliza_23 = 4 then 'Deduções'
-	when ctab_utiliza_23 = 5 then 'Débitos Especiais'
-end utilização
-from esctab23) ca on ca.cod_ajuste = caju_codajus_1
+select 4 as id, 4 || ' - ' || utilização, apuração*-1, mes_ano from v_bi_ajustes
 where cod_util = 0
-group by 1,3
 union all
-select
-utilização,
-SUM(caju_valores_1) as apuração,
-to_char(caju_findata_1, 'mm/yyyy') as mes_ano
-from v_bi_ajustesfisc vba 
-left join (select 	
-ctab_siglest_23	|| ctab_tipoapu_23 || ctab_utiliza_23 || CASE
-		WHEN length(ctab_sequenc_23::text) = 1 THEN '000' || ctab_sequenc_23::text
-	    WHEN length(ctab_sequenc_23::text) = 2 THEN '00' || ctab_sequenc_23::text
-	    WHEN length(ctab_sequenc_23::text) = 3 THEN '0' || ctab_sequenc_23::text
-	    ELSE ctab_sequenc_23::text
-	END AS cod_ajuste,
-ctab_siglest_23,
-ctab_utiliza_23 as cod_util,
-case 
-	when ctab_utiliza_23 = 0 then 'Outros Débitos'
-	when ctab_utiliza_23 = 1 then 'Estorno de Créditos'
-	when ctab_utiliza_23 = 2 then 'Outros Créditos'
-	when ctab_utiliza_23 = 3 then 'Estornos de Débitos'
-	when ctab_utiliza_23 = 4 then 'Deduções'
-	when ctab_utiliza_23 = 5 then 'Débitos Especiais'
-end utilização
-from esctab23) ca on ca.cod_ajuste = caju_codajus_1
+select 5 as id, 5 || ' - ' || utilização, apuração*-1, mes_ano from v_bi_ajustes
 where cod_util = 5
-group by 1,3
 union all
-select 'Total de Créditos nas Entradas' as linha, valor_contabil as apuracao, to_char(data_lancamento, 'mm/yyyy') as data_lanc from v_bi_fiscal vbf where tipo = 'E'
+select 6 as id, '6 - Total de Créditos nas Entradas' as linha, SUM(valor_contabil) as apuracao, to_char(data_lancamento, 'mm/yyyy') as data_lanc from v_bi_fiscal vbf where tipo = 'E'
+group by 2,4,1
 union all
-select 'Total Ajustes a crédito' as linha,caju_valores_1 as apuracao , to_char(caju_findata_1, 'mm/yyyy') as data_lanc from v_bi_ajustesfisc
+select 7 as id, '7 - Total Ajustes a crédito' as linha, SUM(caju_valores_1) as apuracao , to_char(caju_findata_1, 'mm/yyyy') as data_lanc from v_bi_ajustesfisc
 where caju_descric_1 like '%crédito%'
+group by 2,4,1
 union all
-select
-utilização,
-SUM(caju_valores_1) as apuração,
-to_char(caju_findata_1, 'mm/yyyy') as mes_ano
-from v_bi_ajustesfisc vba 
-left join (select 	
-ctab_siglest_23	|| ctab_tipoapu_23 || ctab_utiliza_23 || CASE
-		WHEN length(ctab_sequenc_23::text) = 1 THEN '000' || ctab_sequenc_23::text
-	    WHEN length(ctab_sequenc_23::text) = 2 THEN '00' || ctab_sequenc_23::text
-	    WHEN length(ctab_sequenc_23::text) = 3 THEN '0' || ctab_sequenc_23::text
-	    ELSE ctab_sequenc_23::text
-	END AS cod_ajuste,
-ctab_siglest_23,
-ctab_utiliza_23 as cod_util,
-case 
-	when ctab_utiliza_23 = 0 then 'Outros Débitos'
-	when ctab_utiliza_23 = 1 then 'Estorno de Créditos'
-	when ctab_utiliza_23 = 2 then 'Outros Créditos'
-	when ctab_utiliza_23 = 3 then 'Estornos de Débitos'
-	when ctab_utiliza_23 = 4 then 'Deduções'
-	when ctab_utiliza_23 = 5 then 'Débitos Especiais'
-end utilização
-from esctab23) ca on ca.cod_ajuste = caju_codajus_1
+select 8 as id, 8 || ' - ' || utilização, apuração, mes_ano from v_bi_ajustes
 where cod_util = 1
-group by 1,3
 union all
-select
-utilização,
-SUM(caju_valores_1) as apuração,
-to_char(caju_findata_1, 'mm/yyyy') as mes_ano
-from v_bi_ajustesfisc vba 
-left join (select 	
-ctab_siglest_23	|| ctab_tipoapu_23 || ctab_utiliza_23 || CASE
-		WHEN length(ctab_sequenc_23::text) = 1 THEN '000' || ctab_sequenc_23::text
-	    WHEN length(ctab_sequenc_23::text) = 2 THEN '00' || ctab_sequenc_23::text
-	    WHEN length(ctab_sequenc_23::text) = 3 THEN '0' || ctab_sequenc_23::text
-	    ELSE ctab_sequenc_23::text
-	END AS cod_ajuste,
-ctab_siglest_23,
-ctab_utiliza_23 as cod_util,
-case 
-	when ctab_utiliza_23 = 0 then 'Outros Débitos'
-	when ctab_utiliza_23 = 1 then 'Estorno de Créditos'
-	when ctab_utiliza_23 = 2 then 'Outros Créditos'
-	when ctab_utiliza_23 = 3 then 'Estornos de Débitos'
-	when ctab_utiliza_23 = 4 then 'Deduções'
-	when ctab_utiliza_23 = 5 then 'Débitos Especiais'
-end utilização
-from esctab23) ca on ca.cod_ajuste = caju_codajus_1
+select 9  as id, 9 || ' - ' || utilização, apuração, mes_ano from v_bi_ajustes
 where cod_util = 2
-group by 1,3
 union all
-select 'Saldo credor período anterior' as linha, 0 as apuracao, null as data_lanc  from sinc00
+select 10 as id, 10 || ' - ' || utilização, apuração, mes_ano from v_bi_ajustes
+where cod_util = 4
 union all
-select 'Saldo devedor apurado' as linha, 0 as apuracao, null as data_lanc from sinc00
+select 11 as id, '11 - ICMS a Recolher' as linha, 0 as apuracao, null as data_lanc from sinc00
 union all
 select
-utilização,
-SUM(caju_valores_1) as apuração,
-to_char(caju_findata_1, 'mm/yyyy') as mes_ano
-from v_bi_ajustesfisc vba 
-left join (select 	
-ctab_siglest_23	|| ctab_tipoapu_23 || ctab_utiliza_23 || CASE
-		WHEN length(ctab_sequenc_23::text) = 1 THEN '000' || ctab_sequenc_23::text
-	    WHEN length(ctab_sequenc_23::text) = 2 THEN '00' || ctab_sequenc_23::text
-	    WHEN length(ctab_sequenc_23::text) = 3 THEN '0' || ctab_sequenc_23::text
-	    ELSE ctab_sequenc_23::text
-	END AS cod_ajuste,
-ctab_siglest_23,
-ctab_utiliza_23 as cod_util,
-case 
-	when ctab_utiliza_23 = 0 then 'Outros Débitos'
-	when ctab_utiliza_23 = 1 then 'Estorno de Créditos'
-	when ctab_utiliza_23 = 2 then 'Outros Créditos'
-	when ctab_utiliza_23 = 3 then 'Estornos de Débitos'
-	when ctab_utiliza_23 = 4 then 'Deduções'
-	when ctab_utiliza_23 = 5 then 'Débitos Especiais'
-end utilização
-from esctab23) ca on ca.cod_ajuste = caju_codajus_1
-where cod_util = 4
-group by 1,3
-union all
-select 'ICMS a Recolher' as linha, 0 as apuracao, null as data_lanc from sinc00
-union all
-select 'Saldo a transportar' as linha, 0 as apuracao, null as data_lanc from sinc00
+12 as id, '12 - Saldo a transportar' as utilizacao,
+SUM(cscr_saldcr1_1 + cscr_saldcr2_1 + cscr_saldcr3_1) as apuração,
+     CASE WHEN cscr_mesrefe_1 = 1 then '12' || '/' || (cscr_anorefe_1 - 1)  else
+     CASE
+        WHEN length(cscr_mesrefe_1::text) = 1 THEN '0' || (cscr_mesrefe_1 - 1)::text || '/' || cscr_anorefe_1
+        ELSE (cscr_mesrefe_1 - 1)::text || '/' || cscr_anorefe_1
+    END end  AS data_lanc
+from escsc001
+group by 2,4,1) x
+order by 4, 1
