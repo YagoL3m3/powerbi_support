@@ -2,6 +2,7 @@
 
 CREATE OR REPLACE VIEW public.v_bi_estoque_produtos
 AS SELECT a.prod_empresa_1 AS codigo_empresa,
+	c.ntab_empabrv_12 AS descricao_empresa,
     a.prod_codprod_1 AS codigo_produto,
     b.tpro_descric_1 AS descricao_produto,
     b.tpro_codlinh_1 AS codigo_linha,
@@ -12,8 +13,8 @@ AS SELECT a.prod_empresa_1 AS codigo_empresa,
     a.prod_qtdtota_1 AS quantidade,
     a.prod_custota_1 AS custo_total,
     a.prod_ultcust_1 AS ultimo_custo_unitario,
-    a.prod_precven_1_o1 AS preco_venda_varejo,
-    a.prod_precven_1_o2 AS preco_venda_atacado,
+    a.prod_precove_1 AS preco_venda_varejo,
+    a.prod_precven_1_o1 AS preco_venda_atacado,
     a.prod_locacao_1_o1 AS codigo_locacao,
     NULLIF(a.prod_dtulcom_1, '1899-12-30'::date) AS ultima_compra,
     NULLIF(a.prod_dtulven_1, '1899-12-30'::date) AS ultima_venda,
@@ -33,4 +34,5 @@ AS SELECT a.prod_empresa_1 AS codigo_empresa,
      LEFT JOIN estpro b ON a.prod_codprod_1::text = b.tpro_codprod_1::text
      LEFT JOIN sintab12 c ON c.ntab_emitent_12 = a.prod_empresa_1
      LEFT JOIN sintab64 d ON d.ntab_grupdes_64::text = b.tpro_grupdes_1::text
-     LEFT JOIN sintab06 e ON (e.ntab_codlinh_6::text || e.ntab_sublinh_6::text) = (b.tpro_codlinh_1::text || b.tpro_sublinh_1::text);
+     LEFT JOIN sintab06 e ON (e.ntab_codlinh_6::text || e.ntab_sublinh_6::text) = (b.tpro_codlinh_1::text || b.tpro_sublinh_1::text)
+  WHERE b.tpro_codlinh_1::text <> ALL (ARRAY['VN'::character varying::text, 'VU'::character varying::text, 'IM'::character varying::text]);
