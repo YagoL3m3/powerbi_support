@@ -1,7 +1,8 @@
 -- public.v_bi_fiscal source
 
 CREATE OR REPLACE VIEW public.v_bi_fiscal
-AS SELECT 'E'::text AS tipo,
+AS SELECT 'NOT'::text AS tipo_inc,
+    'E'::text AS tipo,
     v_emitente.codigo AS empresa,
     notenti.enti_nronota_1 AS nota,
     notenti.enti_especie_1 AS especie,
@@ -75,7 +76,8 @@ AS SELECT 'E'::text AS tipo,
                    FROM escmv001) escmv
           WHERE escmv.empresa = notenti.enti_emitent_1 AND escmv.escm_tiporeg_1::text = 'E'::text AND escmv.escm_emitent_1 = notenti.enti_fornece_1 AND escmv.escm_nronota_1 = notenti.enti_nronota_1 AND escmv.escm_sernota_1::text = notenti.enti_sernota_1::text AND escmv.escm_espnota_1::text = notenti.enti_especie_1::text))
 UNION ALL
- SELECT 'S'::text AS tipo,
+ SELECT 'NOT'::text AS tipo_inc,
+    'S'::text AS tipo,
     v_emitente.codigo AS empresa,
     notsaii.saii_nronota_1 AS nota,
     notsai.tsai_espnota_1 AS especie,
@@ -149,8 +151,9 @@ UNION ALL
                    FROM escmv001) escmv
           WHERE escmv.empresa = notsai.tsai_emitent_1 AND escmv.escm_tiporeg_1::text = 'S'::text AND escmv.escm_nronota_1 = notsaii.saii_nronota_1 AND escmv.escm_sernota_1::text = notsaii.saii_sernota_1::text AND escmv.escm_espnota_1::text = notsai.tsai_espnota_1::text))
 UNION ALL
- SELECT x.tipo,
-    x.cd_emitente AS empresa,
+ SELECT 'ESC'::text AS tipo_inc,
+    x.tipo,
+    x.empresa,
     x.nota,
     x.especie,
     x.cfop,
@@ -257,8 +260,21 @@ UNION ALL
            FROM escmv004
              LEFT JOIN escit004 ON escmv004.escm_situnot_1::text = escit004.cite_situnot_1::text AND escmv004.escm_tiporeg_1::text = escit004.cite_tiporeg_1::text AND escmv004.escm_nronota_1 = escit004.cite_nronota_1 AND escmv004.escm_sernota_1::text = escit004.cite_sernota_1::text AND escmv004.escm_espnota_1::text = escit004.cite_espnota_1::text AND escmv004.escm_natoper_1 = escit004.cite_natoper_1 AND escmv004.escm_emitent_1 = escit004.cite_emitent_1
              LEFT JOIN escid004 ON escit004.cite_situnot_1::text = escid004.ited_situnot_1::text AND escit004.cite_tiporeg_1::text = escid004.ited_tiporeg_1::text AND escit004.cite_nronota_1 = escid004.ited_nronota_1 AND escit004.cite_sernota_1::text = escid004.ited_sernota_1::text AND escit004.cite_espnota_1::text = escid004.ited_espnota_1::text AND escit004.cite_natoper_1 = escid004.ited_natoper_1 AND escit004.cite_emitent_1 = escid004.ited_emitent_1 AND escit004.cite_seqnota_1 = escid004.ited_seqnota_1
-          WHERE escmv004.escm_situnot_1::text <> 'C'::text AND escit004.cite_seqnota_1 < 900 AND escmv004.escm_servico_1 = 0::numeric
-        UNION ALL
+          WHERE escmv004.escm_situnot_1::text <> 'C'::text AND escit004.cite_seqnota_1 < 900
+         /*Essa parte do where existe pois na apuração no ESC400 o programa faz essas tratativas com esses tipo de CFOPs*/
+          AND (
+       (
+         escm_inscric_1 NOT IN (' ', 'ISENTO')
+       )
+       OR
+       (
+         escm_inscric_1 IN (' ', 'ISENTO')
+         AND escm_natoper_1 IN (1949, 2949, 3949)
+         AND escm_servico_1 = 0
+         AND ESCM_TOTGERA_1 <> escm_servico_1
+       )
+     )
+         UNION ALL
          SELECT 2 AS empresa,
             escmv002.escm_usuario_1 AS cd_user,
             escmv002.escm_tiporeg_1 AS tipo,
@@ -318,8 +334,21 @@ UNION ALL
            FROM escmv002
              LEFT JOIN escit002 ON escmv002.escm_situnot_1::text = escit002.cite_situnot_1::text AND escmv002.escm_tiporeg_1::text = escit002.cite_tiporeg_1::text AND escmv002.escm_nronota_1 = escit002.cite_nronota_1 AND escmv002.escm_sernota_1::text = escit002.cite_sernota_1::text AND escmv002.escm_espnota_1::text = escit002.cite_espnota_1::text AND escmv002.escm_natoper_1 = escit002.cite_natoper_1 AND escmv002.escm_emitent_1 = escit002.cite_emitent_1
              LEFT JOIN escid002 ON escit002.cite_situnot_1::text = escid002.ited_situnot_1::text AND escit002.cite_tiporeg_1::text = escid002.ited_tiporeg_1::text AND escit002.cite_nronota_1 = escid002.ited_nronota_1 AND escit002.cite_sernota_1::text = escid002.ited_sernota_1::text AND escit002.cite_espnota_1::text = escid002.ited_espnota_1::text AND escit002.cite_natoper_1 = escid002.ited_natoper_1 AND escit002.cite_emitent_1 = escid002.ited_emitent_1 AND escit002.cite_seqnota_1 = escid002.ited_seqnota_1
-          WHERE escmv002.escm_situnot_1::text <> 'C'::text AND escit002.cite_seqnota_1 < 900 AND escmv002.escm_servico_1 = 0::numeric
-        UNION ALL
+          WHERE escmv002.escm_situnot_1::text <> 'C'::text AND escit002.cite_seqnota_1 < 900 --AND escmv002.escm_servico_1 = 0::numeric
+          /*Essa parte do where existe pois na apuração no ESC400 o programa faz essas tratativas com esses tipo de CFOPs*/
+          AND (
+       (
+         escm_inscric_1 NOT IN (' ', 'ISENTO')
+       )
+       OR
+       (
+         escm_inscric_1 IN (' ', 'ISENTO')
+         AND escm_natoper_1 IN (1949, 2949, 3949)
+         AND escm_servico_1 = 0
+         AND ESCM_TOTGERA_1 <> escm_servico_1
+       )
+     )
+          UNION ALL
          SELECT 51 AS empresa,
             escmv051.escm_usuario_1 AS cd_user,
             escmv051.escm_tiporeg_1 AS tipo,
@@ -379,8 +408,21 @@ UNION ALL
            FROM escmv051
              LEFT JOIN escit051 ON escmv051.escm_situnot_1::text = escit051.cite_situnot_1::text AND escmv051.escm_tiporeg_1::text = escit051.cite_tiporeg_1::text AND escmv051.escm_nronota_1 = escit051.cite_nronota_1 AND escmv051.escm_sernota_1::text = escit051.cite_sernota_1::text AND escmv051.escm_espnota_1::text = escit051.cite_espnota_1::text AND escmv051.escm_natoper_1 = escit051.cite_natoper_1 AND escmv051.escm_emitent_1 = escit051.cite_emitent_1
              LEFT JOIN escid051 ON escit051.cite_situnot_1::text = escid051.ited_situnot_1::text AND escit051.cite_tiporeg_1::text = escid051.ited_tiporeg_1::text AND escit051.cite_nronota_1 = escid051.ited_nronota_1 AND escit051.cite_sernota_1::text = escid051.ited_sernota_1::text AND escit051.cite_espnota_1::text = escid051.ited_espnota_1::text AND escit051.cite_natoper_1 = escid051.ited_natoper_1 AND escit051.cite_emitent_1 = escid051.ited_emitent_1 AND escit051.cite_seqnota_1 = escid051.ited_seqnota_1
-          WHERE escmv051.escm_situnot_1::text <> 'C'::text AND escit051.cite_seqnota_1 < 900 AND escmv051.escm_servico_1 = 0::numeric
-        UNION ALL
+          WHERE escmv051.escm_situnot_1::text <> 'C'::text AND escit051.cite_seqnota_1 < 900 --AND escmv051.escm_servico_1 = 0::numeric
+          /*Essa parte do where existe pois na apuração no ESC400 o programa faz essas tratativas com esses tipo de CFOPs*/
+          AND (
+       (
+         escm_inscric_1 NOT IN (' ', 'ISENTO')
+       )
+       OR
+       (
+         escm_inscric_1 IN (' ', 'ISENTO')
+         AND escm_natoper_1 IN (1949, 2949, 3949)
+         AND escm_servico_1 = 0
+         AND ESCM_TOTGERA_1 <> escm_servico_1
+       )
+     )
+          UNION ALL
          SELECT 100 AS empresa,
             escmv100.escm_usuario_1 AS cd_user,
             escmv100.escm_tiporeg_1 AS tipo,
@@ -440,8 +482,21 @@ UNION ALL
            FROM escmv100
              LEFT JOIN escit100 ON escmv100.escm_situnot_1::text = escit100.cite_situnot_1::text AND escmv100.escm_tiporeg_1::text = escit100.cite_tiporeg_1::text AND escmv100.escm_nronota_1 = escit100.cite_nronota_1 AND escmv100.escm_sernota_1::text = escit100.cite_sernota_1::text AND escmv100.escm_espnota_1::text = escit100.cite_espnota_1::text AND escmv100.escm_natoper_1 = escit100.cite_natoper_1 AND escmv100.escm_emitent_1 = escit100.cite_emitent_1
              LEFT JOIN escid100 ON escit100.cite_situnot_1::text = escid100.ited_situnot_1::text AND escit100.cite_tiporeg_1::text = escid100.ited_tiporeg_1::text AND escit100.cite_nronota_1 = escid100.ited_nronota_1 AND escit100.cite_sernota_1::text = escid100.ited_sernota_1::text AND escit100.cite_espnota_1::text = escid100.ited_espnota_1::text AND escit100.cite_natoper_1 = escid100.ited_natoper_1 AND escit100.cite_emitent_1 = escid100.ited_emitent_1 AND escit100.cite_seqnota_1 = escid100.ited_seqnota_1
-          WHERE escmv100.escm_situnot_1::text <> 'C'::text AND escit100.cite_seqnota_1 < 900 AND escmv100.escm_servico_1 = 0::numeric
-        UNION ALL
+          WHERE escmv100.escm_situnot_1::text <> 'C'::text AND escit100.cite_seqnota_1 < 900 --AND escmv100.escm_servico_1 = 0::numeric
+          /*Essa parte do where existe pois na apuração no ESC400 o programa faz essas tratativas com esses tipo de CFOPs*/
+          AND (
+       (
+         escm_inscric_1 NOT IN (' ', 'ISENTO')
+       )
+       OR
+       (
+         escm_inscric_1 IN (' ', 'ISENTO')
+         AND escm_natoper_1 IN (1949, 2949, 3949)
+         AND escm_servico_1 = 0
+         AND ESCM_TOTGERA_1 <> escm_servico_1
+       )
+     )
+          UNION ALL
          SELECT 3 AS empresa,
             escmv003.escm_usuario_1 AS cd_user,
             escmv003.escm_tiporeg_1 AS tipo,
@@ -501,8 +556,21 @@ UNION ALL
            FROM escmv003
              LEFT JOIN escit003 ON escmv003.escm_situnot_1::text = escit003.cite_situnot_1::text AND escmv003.escm_tiporeg_1::text = escit003.cite_tiporeg_1::text AND escmv003.escm_nronota_1 = escit003.cite_nronota_1 AND escmv003.escm_sernota_1::text = escit003.cite_sernota_1::text AND escmv003.escm_espnota_1::text = escit003.cite_espnota_1::text AND escmv003.escm_natoper_1 = escit003.cite_natoper_1 AND escmv003.escm_emitent_1 = escit003.cite_emitent_1
              LEFT JOIN escid003 ON escit003.cite_situnot_1::text = escid003.ited_situnot_1::text AND escit003.cite_tiporeg_1::text = escid003.ited_tiporeg_1::text AND escit003.cite_nronota_1 = escid003.ited_nronota_1 AND escit003.cite_sernota_1::text = escid003.ited_sernota_1::text AND escit003.cite_espnota_1::text = escid003.ited_espnota_1::text AND escit003.cite_natoper_1 = escid003.ited_natoper_1 AND escit003.cite_emitent_1 = escid003.ited_emitent_1 AND escit003.cite_seqnota_1 = escid003.ited_seqnota_1
-          WHERE escmv003.escm_situnot_1::text <> 'C'::text AND escit003.cite_seqnota_1 < 900 AND escmv003.escm_servico_1 = 0::numeric
-        UNION ALL
+          WHERE escmv003.escm_situnot_1::text <> 'C'::text AND escit003.cite_seqnota_1 < 900 --AND escmv003.escm_servico_1 = 0::numeric
+          /*Essa parte do where existe pois na apuração no ESC400 o programa faz essas tratativas com esses tipo de CFOPs*/
+          AND (
+       (
+         escm_inscric_1 NOT IN (' ', 'ISENTO')
+       )
+       OR
+       (
+         escm_inscric_1 IN (' ', 'ISENTO')
+         AND escm_natoper_1 IN (1949, 2949, 3949)
+         AND escm_servico_1 = 0
+         AND ESCM_TOTGERA_1 <> escm_servico_1
+       )
+     )
+          UNION ALL
          SELECT 1 AS empresa,
             escmv001.escm_usuario_1 AS cd_user,
             escmv001.escm_tiporeg_1 AS tipo,
@@ -562,7 +630,20 @@ UNION ALL
            FROM escmv001
              LEFT JOIN escit001 ON escmv001.escm_situnot_1::text = escit001.cite_situnot_1::text AND escmv001.escm_tiporeg_1::text = escit001.cite_tiporeg_1::text AND escmv001.escm_nronota_1 = escit001.cite_nronota_1 AND escmv001.escm_sernota_1::text = escit001.cite_sernota_1::text AND escmv001.escm_espnota_1::text = escit001.cite_espnota_1::text AND escmv001.escm_natoper_1 = escit001.cite_natoper_1 AND escmv001.escm_emitent_1 = escit001.cite_emitent_1
              LEFT JOIN escid001 ON escit001.cite_situnot_1::text = escid001.ited_situnot_1::text AND escit001.cite_tiporeg_1::text = escid001.ited_tiporeg_1::text AND escit001.cite_nronota_1 = escid001.ited_nronota_1 AND escit001.cite_sernota_1::text = escid001.ited_sernota_1::text AND escit001.cite_espnota_1::text = escid001.ited_espnota_1::text AND escit001.cite_natoper_1 = escid001.ited_natoper_1 AND escit001.cite_emitent_1 = escid001.ited_emitent_1 AND escit001.cite_seqnota_1 = escid001.ited_seqnota_1
-          WHERE escmv001.escm_situnot_1::text <> 'C'::text AND escit001.cite_seqnota_1 < 900 AND escmv001.escm_servico_1 = 0::numeric) x
+          WHERE escmv001.escm_situnot_1::text <> 'C'::text AND escit001.cite_seqnota_1 < 900 /*AND escmv001.escm_servico_1 = 0::numeric*/
+          /*Essa parte do where existe pois na apuração no ESC400 o programa faz essas tratativas com esses tipo de CFOPs*/  
+          AND (
+       (
+         escm_inscric_1 NOT IN (' ', 'ISENTO')
+       )
+       OR
+       (
+         escm_inscric_1 IN (' ', 'ISENTO')
+         AND escm_natoper_1 IN (1949, 2949, 3949)
+         AND escm_servico_1 = 0
+         AND ESCM_TOTGERA_1 <> escm_servico_1
+       )
+     )) x
      LEFT JOIN v_emitente c ON x.empresa = c.codigo
      LEFT JOIN sincad ON
         CASE

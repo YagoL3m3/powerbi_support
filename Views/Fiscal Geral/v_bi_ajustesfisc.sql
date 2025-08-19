@@ -1,8 +1,8 @@
--- public.v_bi_ajustesfisc source
+-- public.v_bi_ajustesfisc fonte
 
 CREATE OR REPLACE VIEW public.v_bi_ajustesfisc
-AS SELECT
-	escaj001.caju_inidata_1,
+AS SELECT 1 AS empresa,
+    escaj001.caju_inidata_1,
     escaj001.caju_findata_1,
     escaj001.caju_codajus_1,
     escaj001.caju_sequenc_1,
@@ -14,7 +14,8 @@ AS SELECT
     escaj001.caju_prgorig_1
    FROM escaj001
 UNION ALL
- SELECT escaj002.caju_inidata_1,
+ SELECT 2 AS empresa,
+    escaj002.caju_inidata_1,
     escaj002.caju_findata_1,
     escaj002.caju_codajus_1,
     escaj002.caju_sequenc_1,
@@ -26,7 +27,8 @@ UNION ALL
     escaj002.caju_prgorig_1
    FROM escaj002
 UNION ALL
- SELECT escaj003.caju_inidata_1,
+ SELECT 3 AS empresa,
+    escaj003.caju_inidata_1,
     escaj003.caju_findata_1,
     escaj003.caju_codajus_1,
     escaj003.caju_sequenc_1,
@@ -38,7 +40,8 @@ UNION ALL
     escaj003.caju_prgorig_1
    FROM escaj003
 UNION ALL
- SELECT escaj004.caju_inidata_1,
+ SELECT 4 AS empresa,
+    escaj004.caju_inidata_1,
     escaj004.caju_findata_1,
     escaj004.caju_codajus_1,
     escaj004.caju_sequenc_1,
@@ -50,7 +53,8 @@ UNION ALL
     escaj004.caju_prgorig_1
    FROM escaj004
 UNION ALL
- SELECT escaj051.caju_inidata_1,
+ SELECT 51 AS empresa,
+    escaj051.caju_inidata_1,
     escaj051.caju_findata_1,
     escaj051.caju_codajus_1,
     escaj051.caju_sequenc_1,
@@ -62,7 +66,8 @@ UNION ALL
     escaj051.caju_prgorig_1
    FROM escaj051
 UNION ALL
- SELECT escaj100.caju_inidata_1,
+ SELECT 100 AS empresa,
+    escaj100.caju_inidata_1,
     escaj100.caju_findata_1,
     escaj100.caju_codajus_1,
     escaj100.caju_sequenc_1,

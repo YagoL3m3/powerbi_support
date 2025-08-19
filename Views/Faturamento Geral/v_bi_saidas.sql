@@ -1,4 +1,4 @@
--- public.v_bi_saidas source
+-- public.v_bi_saidas fonte
 
 CREATE OR REPLACE VIEW public.v_bi_saidas
 AS SELECT
@@ -71,7 +71,10 @@ AS SELECT
     notsaii.saii_valoipi_1::numeric(15,2) AS impostos_ipi,
     notsaii.saii_cslreti_1::numeric(15,2) AS impostos_csll,
     notsaii.saii_precrep_1::numeric(15,2) AS valor_custo_reposicao,
-    estprod.prod_cstucom_1::numeric(15,2) AS valor_custo_ultima_compra
+    estprod.prod_cstucom_1::numeric(15,2) AS valor_custo_ultima_compra,
+    sintab01.ntab_nomemun_1 AS desc_municipio,
+    sintab00.ntab_nomesta_0 AS uf_nota,
+    notsai.tsai_pedido1_1 AS num_pedido
    FROM notsaii
      LEFT JOIN notsai ON notsai.tsai_emitent_1 = notsaii.saii_emitent_1 AND notsai.tsai_nronota_1 = notsaii.saii_nronota_1 AND notsai.tsai_sernota_1::text = notsaii.saii_sernota_1::text
      LEFT JOIN estpro ON estpro.tpro_codprod_1::text = notsaii.saii_codprod_1::text
@@ -87,7 +90,10 @@ AS SELECT
      LEFT JOIN cadven co ON co.dven_codvend_1 = notsai.tsai_vendedo_1
      LEFT JOIN sincad c ON c.ncad_cgcocpf_2 = notsai.tsai_cliente_1
      LEFT JOIN cadcom m ON c.ncad_cgcocpf_2 = m.dcom_cgcocpf_1
-  WHERE notsai.tsai_situaca_1::text <> 'C'::text AND notsai.tsai_espnota_1::text <> 'LIB'::text AND sintab24.ntab_tipomov_24 = 1
+     LEFT JOIN notender ON notsai.tsai_emitent_1 = notender.nder_emitent_1 AND notender.nder_nronota_1 = notsai.tsai_nronota_1 AND notsai.tsai_sernota_1::text = notender.nder_sernota_1::text AND notender.nder_espnota_1::text = notsai.tsai_espnota_1::text
+     LEFT JOIN sintab01 ON notender.nder_codmuni_1 = sintab01.ntab_codmuni_1
+     LEFT JOIN sintab00 ON sintab00.ntab_siglest_0::text = notsai.tsai_siglest_1::text
+  WHERE notsai.tsai_situaca_1::text <> 'C'::text AND sintab24.ntab_tribicm_24 = 1 AND (sintab24.ntab_comissa_24 = 1 OR sintab24.ntab_tipomov_24 = 1)
 UNION ALL
  SELECT
         CASE sintab12.ntab_caterev_12
@@ -156,7 +162,10 @@ UNION ALL
     0::numeric(15,2) AS impostos_ipi,
     notsais.tser_valocsl_1::numeric(15,2) AS impostos_csll,
     0::numeric(15,2) AS valor_custo_reposicao,
-    0::numeric(15,2) AS valor_custo_ultima_compra
+    0::numeric(15,2) AS valor_custo_ultima_compra,
+    sintab01.ntab_nomemun_1 AS desc_municipio,
+    sintab00.ntab_nomesta_0 AS uf_nota,
+    notsai.tsai_pedido1_1 AS num_pedido
    FROM notsais
      LEFT JOIN notsai ON notsai.tsai_emitent_1 = notsais.tser_emitent_1 AND notsai.tsai_nronota_1 = notsais.tser_nronota_1 AND notsai.tsai_sernota_1::text = notsais.tser_sernota_1::text
      LEFT JOIN cadser ON cadser.dser_codserv_1 = notsais.tser_codserv_1
@@ -171,4 +180,7 @@ UNION ALL
      LEFT JOIN cadven co ON co.dven_codvend_1 = notsai.tsai_vendedo_1
      LEFT JOIN sincad c ON c.ncad_cgcocpf_2 = notsai.tsai_cliente_1
      LEFT JOIN cadcom m ON c.ncad_cgcocpf_2 = m.dcom_cgcocpf_1
-  WHERE notsai.tsai_situaca_1::text <> 'C'::text AND notsai.tsai_espnota_1::text <> 'LIB'::text AND sintab24.ntab_tipomov_24 = 1;
+     LEFT JOIN notender ON notsai.tsai_emitent_1 = notender.nder_emitent_1 AND notender.nder_nronota_1 = notsai.tsai_nronota_1 AND notsai.tsai_sernota_1::text = notender.nder_sernota_1::text AND notender.nder_espnota_1::text = notsai.tsai_espnota_1::text
+     LEFT JOIN sintab01 ON notender.nder_codmuni_1 = sintab01.ntab_codmuni_1
+     LEFT JOIN sintab00 ON sintab00.ntab_siglest_0::text = notsai.tsai_siglest_1::text
+  WHERE notsai.tsai_situaca_1::text <> 'C'::text AND sintab24.ntab_tribicm_24 = 1 AND notsai.tsai_espnota_1::text <> 'LIB'::text;

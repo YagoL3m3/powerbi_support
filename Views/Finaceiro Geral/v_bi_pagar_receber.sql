@@ -1,4 +1,4 @@
--- public.v_bi_pagar_receber source
+-- public.v_bi_pagar_receber fonte
 
 CREATE OR REPLACE VIEW public.v_bi_pagar_receber
 AS SELECT 'PAGAR'::text AS origem,
